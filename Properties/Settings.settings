@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="WorkIndicator.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="StartWithWindows" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="WindowPattern" Type="System.String" Scope="User">
+      <Value Profile="(Default)">.* - CKACZOR - Remote Desktop Connection</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
