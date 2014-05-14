@@ -17,11 +17,11 @@ namespace WorkIndicator
             _trayIcon = new NotifyIcon { Icon = Resources.MainIcon, Text = Resources.ApplicationName };
 
             // Setup the menu
-            ContextMenuStrip contextMenuStrip = new ContextMenuStrip();
+            var contextMenuStrip = new ContextMenuStrip();
             contextMenuStrip.Opening += HandleContextMenuStripOpening;
 
             // Add the menu items
-            ToolStripMenuItem menuItem = new ToolStripMenuItem(Resources.Auto, null, HandleStatusMenuClick) { Tag = Status.Auto };
+            var menuItem = new ToolStripMenuItem(Resources.Auto, null, HandleStatusMenuClick) { Tag = Status.Auto };
             contextMenuStrip.Items.Add(menuItem);
 
             // --
@@ -65,7 +65,7 @@ namespace WorkIndicator
                 if (menuItem.Tag == null)
                     continue;
 
-                Status status = (Status) menuItem.Tag;
+                var status = (Status) menuItem.Tag;
 
                 ((ToolStripMenuItem) menuItem).Checked = (LightController.Status == status);
             }
@@ -73,9 +73,9 @@ namespace WorkIndicator
 
         private static void HandleStatusMenuClick(object sender, System.EventArgs e)
         {
-            ToolStripMenuItem menuItem = (ToolStripMenuItem) sender;
+            var menuItem = (ToolStripMenuItem) sender;
 
-            Status status = (Status) menuItem.Tag;
+            var status = (Status) menuItem.Tag;
 
             LightController.Status = status;
         }

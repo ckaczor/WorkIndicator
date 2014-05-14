@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-
+using System.Timers;
 using Common.Native;
 using SKYPE4COMLib;
 using WorkIndicator.Delcom;
@@ -23,6 +23,7 @@ namespace WorkIndicator
         private static StoplightIndicator _stoplightIndicator;
         private static bool _initialized;
         private static Status _status = Status.Auto;
+        private static Timer _retryTimer;
 
         public static void Initialize()
         {
@@ -61,9 +62,9 @@ namespace WorkIndicator
 
         private static void UpdateLights()
         {
-            StoplightIndicator.LightState red = StoplightIndicator.LightState.Off;
-            StoplightIndicator.LightState yellow = StoplightIndicator.LightState.Off;
-            StoplightIndicator.LightState green = StoplightIndicator.LightState.Off;
+            var red = StoplightIndicator.LightState.Off;
+            var yellow = StoplightIndicator.LightState.Off;
+            var green = StoplightIndicator.LightState.Off;
 
             if (_status == Status.Auto)
             {
@@ -112,13 +113,31 @@ namespace WorkIndicator
 
         public static void InitializeSkypeDetection()
         {
-            _skype = new Skype();
-            _skype.Attach();
+            try
+            {
+                _skype = new Skype();
+                _skype.Attach();
 
-            _ISkypeEvents_Event skypeEvents = _skype;
+                _ISkypeEvents_Event skypeEvents = _skype;
 
-            skypeEvents.CallStatus += HandleSkypeCallStatus;
-            skypeEvents.Mute += HandleSkypeEventsMute;
+                skypeEvents.CallStatus += HandleSkypeCallStatus;
+                skypeEvents.Mute += HandleSkypeEventsMute;
+            }
+            catch (Exception)
+            {
+                if (_retryTimer == null)
+                {
+                    _retryTimer = new Timer(Properties.Settings.Default.RetryInterval.TotalMilliseconds) { AutoReset = false };
+                    _retryTimer.Elapsed += HandRetryTimerElapsed;
+                }
+
+                _retryTimer.Start();
+            }
+        }
+
+        static void HandRetryTimerElapsed(object sender, ElapsedEventArgs e)
+        {
+            InitializeSkypeDetection();
         }
 
         static void HandleSkypeEventsMute(bool mute)
