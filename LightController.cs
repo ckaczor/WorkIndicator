@@ -24,6 +24,7 @@ namespace WorkIndicator
         private static bool _initialized;
         private static Status _status = Status.Auto;
         private static Timer _retryTimer;
+        private static Timer _updateTimer;
 
         public static void Initialize()
         {
@@ -33,6 +34,10 @@ namespace WorkIndicator
             InitializeWindowDetection();
             InitializeSkypeDetection();
 
+            _updateTimer = new Timer(Properties.Settings.Default.UpdateInterval.TotalMilliseconds) { AutoReset = false };
+            _updateTimer.Elapsed += HandleUpdateTimerElapsed;
+            _updateTimer.Start();
+
             _initialized = true;
         }
 
@@ -40,6 +45,8 @@ namespace WorkIndicator
         {
             if (!_initialized)
                 return;
+
+            _updateTimer.Dispose();
 
             TerminateWindowDetection();
             TerminateSkypeDetection();
@@ -118,10 +125,16 @@ namespace WorkIndicator
                 _skype = new Skype();
                 _skype.Attach();
 
+                var skype = (ISkype) _skype;
+                skype.Mute = !skype.Mute;
+                skype.Mute = !skype.Mute;
+
                 _ISkypeEvents_Event skypeEvents = _skype;
 
                 skypeEvents.CallStatus += HandleSkypeCallStatus;
                 skypeEvents.Mute += HandleSkypeEventsMute;
+                
+                UpdateLights();
             }
             catch (Exception)
             {
@@ -140,12 +153,19 @@ namespace WorkIndicator
             InitializeSkypeDetection();
         }
 
-        static void HandleSkypeEventsMute(bool mute)
+        private static void HandleUpdateTimerElapsed(object sender, ElapsedEventArgs e)
+        {
+            UpdateLights();
+
+            _updateTimer.Start();
+        }
+
+        private static void HandleSkypeEventsMute(bool mute)
         {
             UpdateLights();
         }
 
-        static void HandleSkypeCallStatus(Call call, TCallStatus status)
+        private static void HandleSkypeCallStatus(Call call, TCallStatus status)
         {
             UpdateLights();
         }

@@ -71,6 +71,9 @@ namespace WorkIndicator.Delcom
 
         public void SetLights(LightState red, LightState yellow, LightState green)
         {
+            if (_red == red && _yellow == yellow && _green == green)
+                return;
+
             int port1 = 0;
 
             _red = red;
