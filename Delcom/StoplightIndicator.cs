@@ -74,7 +74,7 @@ namespace WorkIndicator.Delcom
             if (_red == red && _yellow == yellow && _green == green)
                 return;
 
-            int port1 = 0;
+            var port1 = 0;
 
             _red = red;
             _yellow = yellow;
@@ -86,8 +86,8 @@ namespace WorkIndicator.Delcom
 
             _delcom.WritePorts(0, port1);
 
-            int blinkEnable = 0;
-            int blinkDisable = 0;
+            var blinkEnable = 0;
+            var blinkDisable = 0;
 
             if (red == LightState.Blink)
                 blinkEnable = blinkEnable.SetBitValue((int) Light.Red, true);
@@ -109,25 +109,29 @@ namespace WorkIndicator.Delcom
 
         public void SetLight(Light light, LightState state)
         {
+            var red = _red;
+            var yellow = _yellow;
+            var green = _green;
+
             switch (light)
             {
                 case Light.Red:
-                    _red = state;
+                    red = state;
                     break;
 
                 case Light.Yellow:
-                    _yellow = state;
+                    yellow = state;
                     break;
 
                 case Light.Green:
-                    _green = state;
+                    green = state;
                     break;
 
                 default:
                     throw new ArgumentOutOfRangeException("light");
             }
 
-            SetLights(_red, _yellow, _green);
+            SetLights(red, yellow, green);
         }
     }
 }
