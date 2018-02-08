@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Common.Native;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
-using Common.Native;
 using WorkIndicator.Delcom;
 
 namespace WorkIndicator
@@ -17,18 +18,38 @@ namespace WorkIndicator
 
     public static class LightController
     {
+        private static WindowPatterns _windowPatterns;
         private static StoplightIndicator _stoplightIndicator;
         private static bool _initialized;
         private static Status _status = Status.Auto;
 
         public static void Initialize()
         {
+            WindowPatterns.Changed += HandleWindowPatternsChanged;
+
             _stoplightIndicator = new StoplightIndicator();
             _stoplightIndicator.SetLight(StoplightIndicator.Light.Green, StoplightIndicator.LightState.On);
 
-            InitializeWindowDetection();
+            LoadPatterns();
 
             _initialized = true;
+        }
+
+        private static void LoadPatterns()
+        {
+            _windowPatterns = WindowPatterns.Load();
+
+            if (_initialized)
+                TerminateWindowDetection();
+
+            InitializeWindowDetection();
+
+            UpdateLights();
+        }
+
+        private static void HandleWindowPatternsChanged(object sender, EventArgs e)
+        {
+            LoadPatterns();
         }
 
         public static void Dispose()
@@ -37,7 +58,7 @@ namespace WorkIndicator
                 return;
 
             TerminateWindowDetection();
-            
+
             _stoplightIndicator.SetLights(StoplightIndicator.LightState.Off, StoplightIndicator.LightState.Off, StoplightIndicator.LightState.Off);
             _stoplightIndicator.Dispose();
 
@@ -46,7 +67,7 @@ namespace WorkIndicator
 
         public static Status Status
         {
-            get { return _status; }
+            get => _status;
             set
             {
                 _status = value;
@@ -102,10 +123,18 @@ namespace WorkIndicator
         private static readonly List<IntPtr> WindowEventHooks = new List<IntPtr>();
         private static readonly List<IntPtr> WindowHandles = new List<IntPtr>();
 
-        private static readonly Regex WindowMatchRegex = new Regex(Properties.Settings.Default.WindowPattern);
+        private static readonly List<Regex> WindowMatchRegexList = new List<Regex>();
+
+        private static string WildcardToRegexPattern(string value)
+        {
+            return "^" + Regex.Escape(value).Replace("\\?", ".").Replace("\\*", ".*") + "$";
+        }
 
         private static void InitializeWindowDetection()
         {
+            foreach (var windowPattern in _windowPatterns.Where(w => w.Enabled))
+                WindowMatchRegexList.Add(new Regex(WildcardToRegexPattern(windowPattern.Pattern)));
+
             Functions.User32.EnumWindows(EnumWindowProc, IntPtr.Zero);
 
             IntPtr hook = WinEvent.SetWinEventHook(WinEvent.Event.ObjectCreate, WinEvent.Event.ObjectDestroy, IntPtr.Zero, ProcDelegate, 0, 0, WinEvent.SetWinEventHookFlags.OutOfContext | WinEvent.SetWinEventHookFlags.SkipOwnProcess);
@@ -120,6 +149,10 @@ namespace WorkIndicator
         private static void TerminateWindowDetection()
         {
             WindowEventHooks.ForEach(h => WinEvent.UnhookWinEvent(h));
+
+            WindowMatchRegexList.Clear();
+
+            WindowHandles.Clear();
         }
 
         private static bool EnumWindowProc(IntPtr hWnd, IntPtr lParam)
@@ -140,10 +173,13 @@ namespace WorkIndicator
                         if (WindowHandles.Contains(hwnd))
                             WindowHandles.Remove(hwnd);
 
-                        if (WindowMatchRegex.IsMatch(Functions.Window.GetText(hwnd)))
+                        foreach (var regex in WindowMatchRegexList)
                         {
-                            WindowHandles.Add(hwnd);
-                            UpdateLights();
+                            if (regex.IsMatch(Functions.Window.GetText(hwnd)))
+                            {
+                                WindowHandles.Add(hwnd);
+                                UpdateLights();
+                            }
                         }
 
                         break;

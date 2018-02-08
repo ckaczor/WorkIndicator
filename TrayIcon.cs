@@ -1,4 +1,7 @@
-﻿using System.Windows.Forms;
+﻿using Common.Wpf.Windows;
+using System.Collections.Generic;
+using System.Windows.Forms;
+using WorkIndicator.Options;
 using WorkIndicator.Properties;
 
 using Application = System.Windows.Application;
@@ -11,10 +14,12 @@ namespace WorkIndicator
 
         private static bool _initialized;
 
+        private static CategoryWindow _optionsWindow;
+
         public static void Initialize()
         {
             // Create the tray icon
-            _trayIcon = new NotifyIcon { Icon = Resources.MainIcon, Text = Resources.ApplicationName };
+            _trayIcon = new NotifyIcon { Icon = Resources.ApplicationIcon, Text = Resources.ApplicationName };
 
             // Setup the menu
             var contextMenuStrip = new ContextMenuStrip();
@@ -47,6 +52,11 @@ namespace WorkIndicator
             // --
 
             contextMenuStrip.Items.Add("-");
+            contextMenuStrip.Items.Add(Resources.TrayIconContextMenuSettings, null, HandleContextMenuSettingsClick);
+
+            // --
+
+            contextMenuStrip.Items.Add("-");
             contextMenuStrip.Items.Add(Resources.TrayIconContextMenuExit, null, HandleContextMenuExitClick);
 
             // Set the menu into the icon
@@ -65,19 +75,24 @@ namespace WorkIndicator
                 if (menuItem.Tag == null)
                     continue;
 
-                var status = (Status) menuItem.Tag;
+                var status = (Status)menuItem.Tag;
 
-                ((ToolStripMenuItem) menuItem).Checked = (LightController.Status == status);
+                ((ToolStripMenuItem)menuItem).Checked = (LightController.Status == status);
             }
         }
 
         private static void HandleStatusMenuClick(object sender, System.EventArgs e)
         {
-            var menuItem = (ToolStripMenuItem) sender;
+            var menuItem = (ToolStripMenuItem)sender;
 
-            var status = (Status) menuItem.Tag;
+            var status = (Status)menuItem.Tag;
 
             LightController.Status = status;
+        }
+
+        private static void HandleContextMenuSettingsClick(object sender, System.EventArgs e)
+        {
+            ShowSettings();
         }
 
         private static void HandleContextMenuExitClick(object sender, System.EventArgs e)
@@ -96,6 +111,31 @@ namespace WorkIndicator
             _trayIcon.Dispose();
 
             _initialized = false;
+        }
+
+        public static void ShowSettings()
+        {
+            var panels = new List<CategoryPanel>
+            {
+                new GeneralOptionsPanel(),
+                new WindowPatternsOptionsPanel(),
+                new AboutOptionsPanel()
+            };
+
+            var windowPatterns = WindowPatterns.Load();
+
+            if (_optionsWindow == null)
+            {
+                _optionsWindow = new CategoryWindow(windowPatterns, panels, Resources.ResourceManager, "OptionsWindow");
+                _optionsWindow.Closed += (o, args) => { _optionsWindow = null; };
+            }
+
+            var dialogResult = _optionsWindow.ShowDialog();
+
+            if (dialogResult.HasValue && dialogResult.Value)
+            {
+                windowPatterns.Save();
+            }
         }
     }
 }
