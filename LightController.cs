@@ -1,8 +1,4 @@
-﻿using Common.Native;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
+﻿using System;
 using WorkIndicator.Delcom;
 
 namespace WorkIndicator
@@ -18,38 +14,24 @@ namespace WorkIndicator
 
     public static class LightController
     {
-        private static WindowPatterns _windowPatterns;
         private static StoplightIndicator _stoplightIndicator;
         private static bool _initialized;
         private static Status _status = Status.Auto;
 
         public static void Initialize()
         {
-            WindowPatterns.Changed += HandleWindowPatternsChanged;
-
             _stoplightIndicator = new StoplightIndicator();
-            _stoplightIndicator.SetLight(StoplightIndicator.Light.Green, StoplightIndicator.LightState.On);
+            _stoplightIndicator.SetLight(StoplightIndicator.Light.Yellow, StoplightIndicator.LightState.On);
 
-            LoadPatterns();
+            AudioWatcher.MicrophoneInUseChanged += AudioWatcher_MicrophoneInUseChanged;
+            AudioWatcher.Start();
 
             _initialized = true;
         }
 
-        private static void LoadPatterns()
+        private static void AudioWatcher_MicrophoneInUseChanged(bool microphoneInUse)
         {
-            _windowPatterns = WindowPatterns.Load();
-
-            if (_initialized)
-                TerminateWindowDetection();
-
-            InitializeWindowDetection();
-
             UpdateLights();
-        }
-
-        private static void HandleWindowPatternsChanged(object sender, EventArgs e)
-        {
-            LoadPatterns();
         }
 
         public static void Dispose()
@@ -57,7 +39,7 @@ namespace WorkIndicator
             if (!_initialized)
                 return;
 
-            TerminateWindowDetection();
+            AudioWatcher.Stop();
 
             _stoplightIndicator.SetLights(StoplightIndicator.LightState.Off, StoplightIndicator.LightState.Off, StoplightIndicator.LightState.Off);
             _stoplightIndicator.Dispose();
@@ -83,13 +65,13 @@ namespace WorkIndicator
 
             if (_status == Status.Auto)
             {
-                if (WindowHandles.Count > 0)
+                if (AudioWatcher.MicrophoneInUse())
                 {
-                    yellow = StoplightIndicator.LightState.On;
+                    red = StoplightIndicator.LightState.On;
                 }
                 else
                 {
-                    green = StoplightIndicator.LightState.On;
+                    yellow = StoplightIndicator.LightState.On;
                 }
             }
             else
@@ -115,87 +97,5 @@ namespace WorkIndicator
 
             _stoplightIndicator.SetLights(red, yellow, green);
         }
-
-        #region Window detection
-
-        private static readonly WinEvent.WinEventDelegate ProcDelegate = WinEventProc;
-
-        private static readonly List<IntPtr> WindowEventHooks = new List<IntPtr>();
-        private static readonly List<IntPtr> WindowHandles = new List<IntPtr>();
-
-        private static readonly List<Regex> WindowMatchRegexList = new List<Regex>();
-
-        private static string WildcardToRegexPattern(string value)
-        {
-            return "^" + Regex.Escape(value).Replace("\\?", ".").Replace("\\*", ".*") + "$";
-        }
-
-        private static void InitializeWindowDetection()
-        {
-            foreach (var windowPattern in _windowPatterns.Where(w => w.Enabled))
-                WindowMatchRegexList.Add(new Regex(WildcardToRegexPattern(windowPattern.Pattern)));
-
-            Functions.User32.EnumWindows(EnumWindowProc, IntPtr.Zero);
-
-            IntPtr hook = WinEvent.SetWinEventHook(WinEvent.Event.ObjectCreate, WinEvent.Event.ObjectDestroy, IntPtr.Zero, ProcDelegate, 0, 0, WinEvent.SetWinEventHookFlags.OutOfContext | WinEvent.SetWinEventHookFlags.SkipOwnProcess);
-            if (hook != IntPtr.Zero)
-                WindowEventHooks.Add(hook);
-
-            hook = WinEvent.SetWinEventHook(WinEvent.Event.ObjectNameChange, WinEvent.Event.ObjectNameChange, IntPtr.Zero, ProcDelegate, 0, 0, WinEvent.SetWinEventHookFlags.OutOfContext | WinEvent.SetWinEventHookFlags.SkipOwnProcess);
-            if (hook != IntPtr.Zero)
-                WindowEventHooks.Add(hook);
-        }
-
-        private static void TerminateWindowDetection()
-        {
-            WindowEventHooks.ForEach(h => WinEvent.UnhookWinEvent(h));
-
-            WindowMatchRegexList.Clear();
-
-            WindowHandles.Clear();
-        }
-
-        private static bool EnumWindowProc(IntPtr hWnd, IntPtr lParam)
-        {
-            WinEventProc(IntPtr.Zero, WinEvent.Event.ObjectCreate, hWnd, WinEvent.ObjectIdentifier.Window, 0, 0, 0);
-            return true;
-        }
-
-        private static void WinEventProc(IntPtr hWinEventHook, WinEvent.Event eventType, IntPtr hwnd, WinEvent.ObjectIdentifier idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
-        {
-            if (idObject == WinEvent.ObjectIdentifier.Window && idChild == (int) WinEvent.ChildIdentifier.Self)
-            {
-                switch (eventType)
-                {
-                    case WinEvent.Event.ObjectCreate:
-                    case WinEvent.Event.ObjectNameChange:
-
-                        if (WindowHandles.Contains(hwnd))
-                            WindowHandles.Remove(hwnd);
-
-                        foreach (var regex in WindowMatchRegexList)
-                        {
-                            if (regex.IsMatch(Functions.Window.GetText(hwnd)))
-                            {
-                                WindowHandles.Add(hwnd);
-                                UpdateLights();
-                            }
-                        }
-
-                        break;
-
-                    case WinEvent.Event.ObjectDestroy:
-                        if (WindowHandles.Contains(hwnd))
-                        {
-                            WindowHandles.Remove(hwnd);
-                            UpdateLights();
-                        }
-
-                        break;
-                }
-            }
-        }
-
-        #endregion
     }
 }

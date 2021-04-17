@@ -147,6 +147,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AudioWatcher.cs" />
     <Compile Include="LightController.cs" />
     <Compile Include="Delcom\StoplightIndicator.cs" />
     <Compile Include="App.xaml.cs">
@@ -165,15 +166,7 @@
     <Compile Include="Options\GeneralOptionsPanel.xaml.cs">
       <DependentUpon>GeneralOptionsPanel.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Options\WindowPatternsOptionsPanel.xaml.cs">
-      <DependentUpon>WindowPatternsOptionsPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Options\WindowPatternWindow.xaml.cs">
-      <DependentUpon>WindowPatternWindow.xaml</DependentUpon>
-    </Compile>
     <Compile Include="TrayIcon.cs" />
-    <Compile Include="WindowPattern.cs" />
-    <Compile Include="WindowPatterns.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -232,18 +225,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Options\WindowPatternsOptionsPanel.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Options\WindowPatternWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CSCore">
+      <Version>1.2.1.2</Version>
+    </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
-      <Version>10.0.3</Version>
+      <Version>13.0.1</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

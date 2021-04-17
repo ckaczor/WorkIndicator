@@ -113,20 +113,17 @@ namespace WorkIndicator
             _initialized = false;
         }
 
-        public static void ShowSettings()
+        private static void ShowSettings()
         {
             var panels = new List<CategoryPanel>
             {
                 new GeneralOptionsPanel(),
-                new WindowPatternsOptionsPanel(),
                 new AboutOptionsPanel()
             };
 
-            var windowPatterns = WindowPatterns.Load();
-
             if (_optionsWindow == null)
             {
-                _optionsWindow = new CategoryWindow(windowPatterns, panels, Resources.ResourceManager, "OptionsWindow");
+                _optionsWindow = new CategoryWindow(null, panels, Resources.ResourceManager, "OptionsWindow");
                 _optionsWindow.Closed += (o, args) => { _optionsWindow = null; };
             }
 
@@ -134,7 +131,6 @@ namespace WorkIndicator
 
             if (dialogResult.HasValue && dialogResult.Value)
             {
-                windowPatterns.Save();
             }
         }
     }

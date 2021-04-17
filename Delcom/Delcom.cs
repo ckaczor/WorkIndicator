@@ -154,7 +154,7 @@ namespace WorkIndicator.Delcom
         {
             try
             {
-                if (!_deviceHandle.IsClosed)
+                if (_deviceHandle != null && !_deviceHandle.IsClosed)
                     _deviceHandle.Close();
 
                 return 0;

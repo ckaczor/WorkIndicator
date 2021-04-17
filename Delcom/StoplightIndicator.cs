@@ -1,6 +1,6 @@
-﻿using System;
-
-using Common.Extensions;
+﻿using Common.Extensions;
+using System;
+using System.Diagnostics;
 
 namespace WorkIndicator.Delcom
 {
@@ -79,6 +79,8 @@ namespace WorkIndicator.Delcom
             _red = red;
             _yellow = yellow;
             _green = green;
+
+            Debug.WriteLine($"Red: {_red}, Yellow: {_yellow}, Green: {_green}");
 
             port1 = port1.SetBitValue((int) Light.Green, green == LightState.Off);
             port1 = port1.SetBitValue((int) Light.Yellow, yellow == LightState.Off);
