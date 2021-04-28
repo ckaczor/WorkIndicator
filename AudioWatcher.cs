@@ -1,6 +1,7 @@
 ﻿using CSCore.CoreAudioAPI;
 using System;
-using System.Diagnostics;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace WorkIndicator
@@ -11,7 +12,7 @@ namespace WorkIndicator
 
         private static ManualResetEvent _manualResetEvent;
 
-        private static int _activeSessionCount;
+        private static readonly Dictionary<string, int> ActiveSessions = new Dictionary<string, int>();
 
         public static event MicrophoneInUseChangedDelegate MicrophoneInUseChanged;
 
@@ -29,13 +30,11 @@ namespace WorkIndicator
 
                     var sessionEnumerator = sessionManager.GetSessionEnumerator();
 
-                    sessionManager.SessionCreated += HandleAudioSessionCreated;
+                    sessionManager.SessionCreated += (sessionSender, sessionCreatedEventArgs) => HandleDeviceSession(device, sessionCreatedEventArgs.NewSession);
 
                     foreach (var audioSessionControl in sessionEnumerator)
                     {
-                        HandleAudioStateChanged(audioSessionControl, new AudioSessionStateChangedEventArgs(audioSessionControl.SessionState));
-
-                        audioSessionControl.StateChanged += HandleAudioStateChanged;
+                        HandleDeviceSession(device, audioSessionControl);
                     }
                 }
 
@@ -46,29 +45,34 @@ namespace WorkIndicator
             thread.Start();
         }
 
+        private static void HandleDeviceSession(MMDevice device, AudioSessionControl audioSessionControl)
+        {
+            var deviceId = device.DeviceID + audioSessionControl.GroupingParam;
+
+            if (!ActiveSessions.ContainsKey(deviceId))
+                ActiveSessions[deviceId] = 0;
+
+            HandleAudioStateChanged(deviceId, audioSessionControl.SessionState);
+
+            audioSessionControl.StateChanged += (sender, sessionStateChangedEventArgs) =>
+                HandleAudioStateChanged(deviceId, sessionStateChangedEventArgs.NewState);
+        }
+
         public static void Stop()
         {
             _manualResetEvent?.Set();
         }
 
-        private static void HandleAudioSessionCreated(object sender, SessionCreatedEventArgs e)
+        private static void HandleAudioStateChanged(string deviceId, AudioSessionState newState)
         {
-            HandleAudioStateChanged(null, new AudioSessionStateChangedEventArgs(e.NewSession.SessionState));
-
-            e.NewSession.StateChanged += HandleAudioStateChanged;
-        }
-
-        private static void HandleAudioStateChanged(object sender, AudioSessionStateChangedEventArgs e)
-        {
-            Debug.WriteLine($"{e.NewState}");
-
-            switch (e.NewState)
+            switch (newState)
             {
                 case AudioSessionState.AudioSessionStateActive:
-                    _activeSessionCount++;
+                    ActiveSessions[deviceId]++;
                     break;
                 case AudioSessionState.AudioSessionStateInactive:
-                    _activeSessionCount--;
+                    if (ActiveSessions[deviceId] > 0)
+                        ActiveSessions[deviceId]--;
                     break;
                 case AudioSessionState.AudioSessionStateExpired:
                     break;
@@ -76,17 +80,12 @@ namespace WorkIndicator
                     throw new ArgumentOutOfRangeException();
             }
 
-            if (_activeSessionCount < 0)
-                _activeSessionCount = 0;
-
-            Debug.WriteLine($"{_activeSessionCount}");
-
             MicrophoneInUseChanged?.Invoke(MicrophoneInUse());
         }
 
         public static bool MicrophoneInUse()
         {
-            return _activeSessionCount > 0;
+            return ActiveSessions.Any(a => a.Value > 0);
         }
     }
 }
