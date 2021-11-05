@@ -1,0 +1,19 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>WorkIndicator</id>
+    <title>Work Indicator</title>
+    <version>$version$</version>
+    <authors>Chris Kaczor</authors>
+    <description>Controls a Delcom Green/Yellow/Red Indicator to show work status (free, working, on phone, talking) either manually or automatically.</description>
+    <projectUrl>https://github.com/ckaczor/WorkIndicator</projectUrl>
+    <license type="expression">MIT</license>
+    <tags></tags>
+    <dependencies>
+      <group targetFramework=".NETFramework4.5" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="bin\$configuration$\**\*" target="lib\net45" exclude="*.pdb;*.nupkg;*.vshost.*" />
+  </files>
+</package>

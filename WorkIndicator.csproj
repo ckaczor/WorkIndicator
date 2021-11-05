@@ -195,6 +195,7 @@
     </None>
     <AppDesigner Include="Properties\" />
     <None Include="README.md" />
+    <None Include="WorkIndicator.nuspec" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\ApplicationIcon.ico" />
