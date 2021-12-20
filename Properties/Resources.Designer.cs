@@ -134,6 +134,15 @@ namespace WorkIndicator.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to _Check for Update.
+        /// </summary>
+        public static string CheckUpdate {
+            get {
+                return ResourceManager.GetString("CheckUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Enabled.
         /// </summary>
         public static string ColumnHeader_Enabled {

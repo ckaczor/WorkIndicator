@@ -1,5 +1,6 @@
 ﻿using Common.Update;
 using System.Reflection;
+using System.Windows;
 
 namespace WorkIndicator.Options
 {
@@ -32,5 +33,10 @@ namespace WorkIndicator.Options
         }
 
         public override string CategoryName => Properties.Resources.OptionCategory_About;
+
+        private async void HandleCheckForUpdateButtonClick(object sender, RoutedEventArgs e)
+        {
+            await UpdateCheck.CheckUpdate((status, message) => UpdateMessage.Content = message);
+        }
     }
 }

@@ -76,7 +76,7 @@ namespace WorkIndicator
             if (status == UpdateCheck.UpdateStatus.None)
                 message = WorkIndicator.Properties.Resources.Loading;
 
-            _dispatcher.Invoke(() => TrayIcon.SetText(message));
+            // _dispatcher.Invoke(() => TrayIcon.SetText(message));
         }
 
         protected override void OnExit(ExitEventArgs e)
