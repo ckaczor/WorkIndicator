@@ -68,9 +68,9 @@ namespace WorkIndicator
             _initialized = true;
         }
 
-        public static void SetText(string text)
+        public static void ShowUpdateMessage(string text)
         {
-            _trayIcon.Text = text;
+            _trayIcon.ShowBalloonTip(250, Resources.ApplicationName, text, ToolTipIcon.None);
         }
 
         static void HandleContextMenuStripOpening(object sender, System.ComponentModel.CancelEventArgs e)

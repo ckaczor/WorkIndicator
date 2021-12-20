@@ -17,6 +17,7 @@ namespace WorkIndicator
         public static string UpdateUrl = "https://github.com/ckaczor/WorkIndicator";
 
         private Dispatcher _dispatcher;
+        private InterprocessMessageListener _commandLineListener;
 
         [STAThread]
         public static void Main(string[] args)
@@ -37,10 +38,10 @@ namespace WorkIndicator
             // Initialize the tray icon
             TrayIcon.Initialize();
 
-            Task.Factory.StartNew(UpdateApp).ContinueWith(task => StartUpdate(task.Result.Result));
+            Task.Factory.StartNew(CheckUpdate).ContinueWith(task => StartApplication(task.Result.Result));
         }
 
-        private void StartUpdate(bool updateRequired)
+        private void StartApplication(bool updateRequired)
         {
             if (updateRequired)
                 return;
@@ -58,6 +59,10 @@ namespace WorkIndicator
                     return;
                 }
 
+                // Initialize the command line listener
+                _commandLineListener = new InterprocessMessageListener(WorkIndicator.Properties.Resources.ApplicationName);
+                _commandLineListener.MessageReceived += HandleCommandLine;
+
                 // Set automatic start into the registry
                 Current.SetStartWithWindows(Settings.Default.StartWithWindows);
 
@@ -66,17 +71,22 @@ namespace WorkIndicator
             });
         }
 
-        private async Task<bool> UpdateApp()
+        private void HandleCommandLine(object sender, InterprocessMessageListener.InterprocessMessageEventArgs e)
+        {
+            
+        }
+
+        private async Task<bool> CheckUpdate()
         {
             return await UpdateCheck.CheckUpdate(HandleUpdateStatus);
         }
 
         private void HandleUpdateStatus(UpdateCheck.UpdateStatus status, string message)
         {
-            if (status == UpdateCheck.UpdateStatus.None)
-                message = WorkIndicator.Properties.Resources.Loading;
+            if (status != UpdateCheck.UpdateStatus.Downloading)
+                return;
 
-            // _dispatcher.Invoke(() => TrayIcon.SetText(message));
+            _dispatcher.Invoke(() => TrayIcon.ShowUpdateMessage(message));
         }
 
         protected override void OnExit(ExitEventArgs e)
