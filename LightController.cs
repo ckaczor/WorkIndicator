@@ -15,11 +15,15 @@ namespace WorkIndicator
     public static class LightController
     {
         private static StoplightIndicator _stoplightIndicator;
+        private static UsbService _usbService;
         private static bool _initialized;
         private static Status _status = Status.Auto;
 
         public static void Initialize()
         {
+            _usbService = new UsbService();
+            _usbService.DevicesChanged += DevicesChanged;
+
             _stoplightIndicator = new StoplightIndicator();
             _stoplightIndicator.SetLight(StoplightIndicator.Light.Yellow, StoplightIndicator.LightState.On);
 
@@ -27,6 +31,14 @@ namespace WorkIndicator
             AudioWatcher.Start();
 
             _initialized = true;
+        }
+
+        private static void DevicesChanged()
+        {
+            _stoplightIndicator?.Dispose();
+            _stoplightIndicator = new StoplightIndicator();
+    
+            UpdateLights();
         }
 
         private static void AudioWatcher_MicrophoneInUseChanged(bool microphoneInUse)
@@ -43,6 +55,8 @@ namespace WorkIndicator
 
             _stoplightIndicator.SetLights(StoplightIndicator.LightState.Off, StoplightIndicator.LightState.Off, StoplightIndicator.LightState.Off);
             _stoplightIndicator.Dispose();
+
+            _usbService.Dispose();
 
             _initialized = false;
         }

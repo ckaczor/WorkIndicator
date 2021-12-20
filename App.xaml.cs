@@ -59,22 +59,13 @@ namespace WorkIndicator
             // Initialize the tray icon
             TrayIcon.Initialize();
 
-            Task.Factory.StartNew(CheckUpdate).ContinueWith(task => StartApplication(task.Result.Result));
-        }
+            // Set automatic start into the registry
+            Current.SetStartWithWindows(Settings.Default.StartWithWindows);
 
-        private void StartApplication(bool updateRequired)
-        {
-            if (updateRequired)
-                return;
+            // Initialize the light controller
+            LightController.Initialize();
 
-            Task.Factory.StartNew(() =>
-            {
-                // Set automatic start into the registry
-                Current.SetStartWithWindows(Settings.Default.StartWithWindows);
-
-                // Initialize the light controller
-                LightController.Initialize();
-            });
+            Task.Factory.StartNew(CheckUpdate);
         }
 
         private void HandleCommandLine(object sender, InterprocessMessageListener.InterprocessMessageEventArgs e)
