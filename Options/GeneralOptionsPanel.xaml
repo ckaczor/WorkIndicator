@@ -7,8 +7,14 @@
                        xmlns:properties="clr-namespace:WorkIndicator.Properties"
                        mc:Ignorable="d"
                        d:DesignHeight="300"
-                       d:DesignWidth="300">
+                       d:DesignWidth="300"
+                       DataContext="{Binding RelativeSource={RelativeSource Self}}">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
@@ -18,5 +24,19 @@
                   VerticalAlignment="Top"
                   VerticalContentAlignment="Center"
                   Grid.ColumnSpan="2" />
+        <Label Content="{x:Static properties:Resources.DefaultStatus}"
+                   Name="ApplicationNameLabel"
+                   VerticalAlignment="Center"
+                   Padding="0,0,6,0"
+                   Grid.Row="1"
+                   Margin="0,20,0,0" />
+        <ComboBox Name="DefaultStatus"
+                  Grid.Row="1" 
+                  Grid.Column="1"
+                  Margin="0,20,0,0"
+                  ItemsSource="{Binding Path=DefaultStatusList}"
+                  DisplayMemberPath="Text"
+                  SelectedValuePath="Value">
+        </ComboBox>
     </Grid>
 </windows:CategoryPanel>

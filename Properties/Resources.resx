@@ -244,4 +244,7 @@
   <data name="CheckUpdate" xml:space="preserve">
     <value>_Check for Update</value>
   </data>
+  <data name="DefaultStatus" xml:space="preserve">
+    <value>_Default status:</value>
+  </data>
 </root>

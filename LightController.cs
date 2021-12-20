@@ -27,17 +27,25 @@ namespace WorkIndicator
             _stoplightIndicator = new StoplightIndicator();
             _stoplightIndicator.SetLight(StoplightIndicator.Light.Yellow, StoplightIndicator.LightState.On);
 
+            Properties.Settings.Default.PropertyChanged += HandleSettingChange;
+
             AudioWatcher.MicrophoneInUseChanged += AudioWatcher_MicrophoneInUseChanged;
             AudioWatcher.Start();
 
             _initialized = true;
         }
 
+        private static void HandleSettingChange(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Properties.Settings.Default.DefaultStatus))
+                UpdateLights();
+        }
+
         private static void DevicesChanged()
         {
             _stoplightIndicator?.Dispose();
             _stoplightIndicator = new StoplightIndicator();
-    
+
             UpdateLights();
         }
 
@@ -77,36 +85,36 @@ namespace WorkIndicator
             var yellow = StoplightIndicator.LightState.Off;
             var green = StoplightIndicator.LightState.Off;
 
-            if (_status == Status.Auto)
+            var status = _status;
+
+            if (status == Status.Auto)
             {
                 if (AudioWatcher.MicrophoneInUse())
                 {
-                    red = StoplightIndicator.LightState.On;
+                    status = Status.OnPhone;
                 }
                 else
                 {
-                    yellow = StoplightIndicator.LightState.On;
+                    status = (Status) Enum.Parse(typeof(Status), Properties.Settings.Default.DefaultStatus);
                 }
             }
-            else
+
+            switch (status)
             {
-                switch (_status)
-                {
-                    case Status.Free:
-                        green = StoplightIndicator.LightState.On;
-                        break;
-                    case Status.Working:
-                        yellow = StoplightIndicator.LightState.On;
-                        break;
-                    case Status.OnPhone:
-                        red = StoplightIndicator.LightState.On;
-                        break;
-                    case Status.Talking:
-                        red = StoplightIndicator.LightState.Blink;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                case Status.Free:
+                    green = StoplightIndicator.LightState.On;
+                    break;
+                case Status.Working:
+                    yellow = StoplightIndicator.LightState.On;
+                    break;
+                case Status.OnPhone:
+                    red = StoplightIndicator.LightState.On;
+                    break;
+                case Status.Talking:
+                    red = StoplightIndicator.LightState.Blink;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
             _stoplightIndicator.SetLights(red, yellow, green);

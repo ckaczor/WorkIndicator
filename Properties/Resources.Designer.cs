@@ -170,6 +170,15 @@ namespace WorkIndicator.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to _Default status:.
+        /// </summary>
+        public static string DefaultStatus {
+            get {
+                return ResourceManager.GetString("DefaultStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Delete.
         /// </summary>
         public static string DeleteWindowPattern {
