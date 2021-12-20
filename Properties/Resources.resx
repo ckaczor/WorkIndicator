@@ -220,4 +220,25 @@
   <data name="Working" xml:space="preserve">
     <value>Working</value>
   </data>
+  <data name="CheckingForUpdate" xml:space="preserve">
+    <value>Checking for update...</value>
+  </data>
+  <data name="DownloadingUpdate" xml:space="preserve">
+    <value>Downloading update...</value>
+  </data>
+  <data name="NoUpdate" xml:space="preserve">
+    <value>No update found</value>
+  </data>
+  <data name="Updating" xml:space="preserve">
+    <value>Updating application...</value>
+  </data>
+  <data name="RestartingAfterUpdate" xml:space="preserve">
+    <value>Restarting application...</value>
+  </data>
+  <data name="InstallingUpdate" xml:space="preserve">
+    <value>Installing update...</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
 </root>

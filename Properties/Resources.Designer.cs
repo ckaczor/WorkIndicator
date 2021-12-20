@@ -19,7 +19,7 @@ namespace WorkIndicator.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -125,6 +125,15 @@ namespace WorkIndicator.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Checking for update....
+        /// </summary>
+        public static string CheckingForUpdate {
+            get {
+                return ResourceManager.GetString("CheckingForUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Enabled.
         /// </summary>
         public static string ColumnHeader_Enabled {
@@ -170,6 +179,15 @@ namespace WorkIndicator.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Downloading update....
+        /// </summary>
+        public static string DownloadingUpdate {
+            get {
+                return ResourceManager.GetString("DownloadingUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Edit.
         /// </summary>
         public static string EditWindowPattern {
@@ -193,6 +211,33 @@ namespace WorkIndicator.Properties {
         public static string Free {
             get {
                 return ResourceManager.GetString("Free", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Installing update....
+        /// </summary>
+        public static string InstallingUpdate {
+            get {
+                return ResourceManager.GetString("InstallingUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Loading....
+        /// </summary>
+        public static string Loading {
+            get {
+                return ResourceManager.GetString("Loading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No update found.
+        /// </summary>
+        public static string NoUpdate {
+            get {
+                return ResourceManager.GetString("NoUpdate", resourceCulture);
             }
         }
         
@@ -279,6 +324,15 @@ namespace WorkIndicator.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Restarting application....
+        /// </summary>
+        public static string RestartingAfterUpdate {
+            get {
+                return ResourceManager.GetString("RestartingAfterUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to _Start when Windows starts.
         /// </summary>
         public static string StartWithWindows {
@@ -311,6 +365,15 @@ namespace WorkIndicator.Properties {
         public static string TrayIconContextMenuSettings {
             get {
                 return ResourceManager.GetString("TrayIconContextMenuSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Updating application....
+        /// </summary>
+        public static string Updating {
+            get {
+                return ResourceManager.GetString("Updating", resourceCulture);
             }
         }
         

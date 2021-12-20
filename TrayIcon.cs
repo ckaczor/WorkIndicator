@@ -68,6 +68,11 @@ namespace WorkIndicator
             _initialized = true;
         }
 
+        public static void SetText(string text)
+        {
+            _trayIcon.Text = text;
+        }
+
         static void HandleContextMenuStripOpening(object sender, System.ComponentModel.CancelEventArgs e)
         {
             foreach (ToolStripItem menuItem in _trayIcon.ContextMenuStrip.Items)
