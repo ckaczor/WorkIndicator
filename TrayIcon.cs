@@ -136,6 +136,7 @@ namespace WorkIndicator
 
             if (dialogResult.HasValue && dialogResult.Value)
             {
+                Properties.Settings.Default.Save();
             }
         }
     }
