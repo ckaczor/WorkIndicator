@@ -36,6 +36,22 @@ namespace WorkIndicator
 
             _dispatcher = Dispatcher.CurrentDispatcher;
 
+            // Create an isolation handle to see if we are already running
+            _isolationHandle = ApplicationIsolation.GetIsolationHandle();
+
+            // If there is another copy then pass it the command line and exit
+            if (_isolationHandle == null)
+            {
+                try
+                {
+                    InterprocessMessageSender.SendMessage(Environment.CommandLine);
+                }
+                catch { }
+
+                Shutdown();
+                return;
+            }
+
             // Initialize the command line listener
             _commandLineListener = new InterprocessMessageListener(Assembly.GetEntryAssembly().GetName().Name);
             _commandLineListener.MessageReceived += HandleCommandLine;
@@ -53,22 +69,6 @@ namespace WorkIndicator
 
             Task.Factory.StartNew(() =>
             {
-                // Create an isolation handle to see if we are already running
-                _isolationHandle = ApplicationIsolation.GetIsolationHandle();
-
-                // If there is another copy then pass it the command line and exit
-                if (_isolationHandle == null)
-                {
-                    try
-                    {
-                        InterprocessMessageSender.SendMessage(Environment.CommandLine);
-                    }
-                    catch { }
-
-                    _dispatcher.Invoke(Shutdown);
-                    return;
-                }
-
                 // Set automatic start into the registry
                 Current.SetStartWithWindows(Settings.Default.StartWithWindows);
 
@@ -89,7 +89,7 @@ namespace WorkIndicator
 
         private void HandleUpdateStatus(UpdateCheck.UpdateStatus status, string message)
         {
-            if (status != UpdateCheck.UpdateStatus.Downloading)
+            if (status != UpdateCheck.UpdateStatus.Installing)
                 return;
 
             _dispatcher.Invoke(() => TrayIcon.ShowUpdateMessage(message));
