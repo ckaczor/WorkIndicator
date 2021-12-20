@@ -191,6 +191,7 @@
     <None Include="app.config" />
     <None Include="appveyor.yml" />
     <None Include="LICENSE.md" />
+    <None Include="NuGet.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
