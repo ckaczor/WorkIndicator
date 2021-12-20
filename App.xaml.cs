@@ -3,6 +3,7 @@ using Common.IO;
 using Common.Wpf.Extensions;
 using Squirrel;
 using System;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
@@ -35,6 +36,10 @@ namespace WorkIndicator
 
             _dispatcher = Dispatcher.CurrentDispatcher;
 
+            // Initialize the command line listener
+            _commandLineListener = new InterprocessMessageListener(Assembly.GetEntryAssembly().GetName().Name);
+            _commandLineListener.MessageReceived += HandleCommandLine;
+
             // Initialize the tray icon
             TrayIcon.Initialize();
 
@@ -54,14 +59,15 @@ namespace WorkIndicator
                 // If there is another copy then pass it the command line and exit
                 if (_isolationHandle == null)
                 {
-                    InterprocessMessageSender.SendMessage(Environment.CommandLine);
-                    Shutdown();
+                    try
+                    {
+                        InterprocessMessageSender.SendMessage(Environment.CommandLine);
+                    }
+                    catch { }
+
+                    _dispatcher.Invoke(Shutdown);
                     return;
                 }
-
-                // Initialize the command line listener
-                _commandLineListener = new InterprocessMessageListener(WorkIndicator.Properties.Resources.ApplicationName);
-                _commandLineListener.MessageReceived += HandleCommandLine;
 
                 // Set automatic start into the registry
                 Current.SetStartWithWindows(Settings.Default.StartWithWindows);
@@ -73,7 +79,7 @@ namespace WorkIndicator
 
         private void HandleCommandLine(object sender, InterprocessMessageListener.InterprocessMessageEventArgs e)
         {
-            
+
         }
 
         private async Task<bool> CheckUpdate()
@@ -98,7 +104,7 @@ namespace WorkIndicator
             TrayIcon.Dispose();
 
             // Get rid of the isolation handle
-            _isolationHandle.Dispose();
+            _isolationHandle?.Dispose();
 
             base.OnExit(e);
         }
