@@ -70,7 +70,7 @@ namespace WorkIndicator
 
         public static void ShowUpdateMessage(string text)
         {
-            _trayIcon.ShowBalloonTip(250, Resources.ApplicationName, text, ToolTipIcon.None);
+            _trayIcon.ShowBalloonTip(200, Resources.ApplicationName, text, ToolTipIcon.None);
         }
 
         static void HandleContextMenuStripOpening(object sender, System.ComponentModel.CancelEventArgs e)

@@ -93,6 +93,8 @@ namespace WorkIndicator
                 return;
 
             _dispatcher.Invoke(() => TrayIcon.ShowUpdateMessage(message));
+
+            TrayIcon.Dispose();
         }
 
         protected override void OnExit(ExitEventArgs e)
