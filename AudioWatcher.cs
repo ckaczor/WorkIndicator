@@ -16,17 +16,23 @@ namespace WorkIndicator
 
         public static event MicrophoneInUseChangedDelegate MicrophoneInUseChanged;
 
+        private static Thread _thread;
+
+        private static readonly List<AudioSessionManager2> _sessionManagers = new List<AudioSessionManager2>();
+
         public static void Start()
         {
             _manualResetEvent = new ManualResetEvent(false);
 
-            var thread = new Thread(delegate ()
+            _thread = new Thread(delegate ()
             {
                 var deviceEnumerator = new MMDeviceEnumerator();
 
                 foreach (var device in deviceEnumerator.EnumAudioEndpoints(DataFlow.Capture, DeviceState.Active))
                 {
                     var sessionManager = AudioSessionManager2.FromMMDevice(device);
+
+                    _sessionManagers.Add(sessionManager);
 
                     var sessionEnumerator = sessionManager.GetSessionEnumerator();
 
@@ -41,8 +47,8 @@ namespace WorkIndicator
                 _manualResetEvent.WaitOne();
             });
 
-            thread.SetApartmentState(ApartmentState.MTA);
-            thread.Start();
+            _thread.SetApartmentState(ApartmentState.MTA);
+            _thread.Start();
         }
 
         private static void HandleDeviceSession(MMDevice device, AudioSessionControl audioSessionControl)
@@ -60,6 +66,8 @@ namespace WorkIndicator
 
         public static void Stop()
         {
+            _sessionManagers.Clear();
+
             _manualResetEvent?.Set();
         }
 
