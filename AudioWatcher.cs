@@ -1,4 +1,5 @@
 ﻿using CSCore.CoreAudioAPI;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,8 +21,12 @@ namespace WorkIndicator
 
         private static readonly List<AudioSessionManager2> _sessionManagers = new List<AudioSessionManager2>();
 
+        private static readonly ILogger Logger = Log.Logger;
+
         public static void Start()
         {
+            Logger.Debug("AudioWatcher - Start");
+
             _manualResetEvent = new ManualResetEvent(false);
 
             _thread = new Thread(delegate ()
@@ -34,11 +39,9 @@ namespace WorkIndicator
 
                     _sessionManagers.Add(sessionManager);
 
-                    var sessionEnumerator = sessionManager.GetSessionEnumerator();
-
                     sessionManager.SessionCreated += (sessionSender, sessionCreatedEventArgs) => HandleDeviceSession(device, sessionCreatedEventArgs.NewSession);
 
-                    foreach (var audioSessionControl in sessionEnumerator)
+                    foreach (var audioSessionControl in sessionManager.GetSessionEnumerator())
                     {
                         HandleDeviceSession(device, audioSessionControl);
                     }
@@ -55,6 +58,8 @@ namespace WorkIndicator
         {
             var deviceId = device.DeviceID + audioSessionControl.GroupingParam;
 
+            Logger.Debug($"AudioWatcher - HandleDeviceSession - {device.FriendlyName}, {deviceId}");
+
             if (!ActiveSessions.ContainsKey(deviceId))
                 ActiveSessions[deviceId] = 0;
 
@@ -66,6 +71,8 @@ namespace WorkIndicator
 
         public static void Stop()
         {
+            Logger.Debug("AudioWatcher - Stop");
+
             _sessionManagers.Clear();
 
             _manualResetEvent?.Set();
@@ -73,6 +80,8 @@ namespace WorkIndicator
 
         private static void HandleAudioStateChanged(string deviceId, AudioSessionState newState)
         {
+            Logger.Debug($"AudioWatcher - HandleAudioStateChanged - {deviceId}, {newState}");
+
             switch (newState)
             {
                 case AudioSessionState.AudioSessionStateActive:
@@ -83,10 +92,13 @@ namespace WorkIndicator
                         ActiveSessions[deviceId]--;
                     break;
                 case AudioSessionState.AudioSessionStateExpired:
+                    ActiveSessions[deviceId] = 0;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+
+            Logger.Debug($"AudioWatcher - HandleAudioStateChanged - {deviceId} = {ActiveSessions[deviceId]}");
 
             MicrophoneInUseChanged?.Invoke(MicrophoneInUse());
         }

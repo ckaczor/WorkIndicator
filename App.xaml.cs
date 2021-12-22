@@ -1,6 +1,7 @@
 ﻿using Common.Helpers;
 using Common.IO;
 using Common.Wpf.Extensions;
+using Serilog;
 using Squirrel;
 using System;
 using System.Reflection;
@@ -24,6 +25,13 @@ namespace WorkIndicator
         public static void Main(string[] args)
         {
             SquirrelAwareApp.HandleEvents(onAppUpdate: version => Common.Settings.Extensions.RestoreSettings());
+
+            Log.Logger = new LoggerConfiguration()
+                        .MinimumLevel.Debug()
+                        .WriteTo.File("log.txt", rollingInterval: RollingInterval.Day)
+                        .CreateLogger();
+
+            Log.Logger.Debug($"Startup");
 
             var application = new App();
             application.InitializeComponent();
@@ -90,6 +98,8 @@ namespace WorkIndicator
 
         protected override void OnExit(ExitEventArgs e)
         {
+            Log.Logger.Debug($"Exit");
+
             // Get rid of the light controller
             LightController.Dispose();
 
