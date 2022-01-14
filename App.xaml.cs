@@ -4,6 +4,7 @@ using Common.Wpf.Extensions;
 using Serilog;
 using Squirrel;
 using System;
+using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
@@ -26,9 +27,15 @@ namespace WorkIndicator
         {
             SquirrelAwareApp.HandleEvents(onAppUpdate: version => Common.Settings.Extensions.RestoreSettings());
 
+            var location = Assembly.GetEntryAssembly().Location;
+
+            var path = Path.GetDirectoryName(location);
+
+            var logFile = Path.Combine(path, "log.txt");
+
             Log.Logger = new LoggerConfiguration()
                         .MinimumLevel.Debug()
-                        .WriteTo.File("log.txt", rollingInterval: RollingInterval.Day)
+                        .WriteTo.File(logFile, rollingInterval: RollingInterval.Day)
                         .CreateLogger();
 
             Log.Logger.Debug($"Startup");
